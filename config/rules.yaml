@@ -1,0 +1,43 @@
+# Modbus Guard Security Rules
+# This file defines which Modbus operations are permitted.
+
+# Global settings
+global:
+  default_action: log_allowed # Options: log_allowed, silent
+  alert_level: info
+
+# Policy Rules
+# Function Codes:
+# 1: Read Coils
+# 2: Read Discrete Inputs
+# 3: Read Holding Registers
+# 4: Read Input Registers
+# 5: Write Single Coil
+# 6: Write Single Register
+# 15: Write Multiple Coils
+# 16: Write Multiple Registers
+
+rules:
+  - id: "allow-reads"
+    description: "Allow all read operations"
+    function_codes: [1, 2, 3, 4]
+    action: allow
+
+  - id: "alert-on-single-write"
+    description: "Alert on any single write attempt"
+    function_codes: [5, 6]
+    action: alert
+    severity: medium
+
+  - id: "block-multiple-writes"
+    description: "Strict alert on multiple write attempts"
+    function_codes: [15, 16]
+    action: alert
+    severity: high
+
+  - id: "critical-register-protection"
+    description: "Alert if writing to register 100-105"
+    function_codes: [6, 16]
+    registers: [100, 101, 102, 103, 104, 105]
+    action: alert
+    severity: critical
