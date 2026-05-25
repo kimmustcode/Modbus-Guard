@@ -14,6 +14,4 @@ class PolicyEngine:
         # 2. Iterate through rules.
         # 3. Print alerts for violations.
 
-
-        
         pass
