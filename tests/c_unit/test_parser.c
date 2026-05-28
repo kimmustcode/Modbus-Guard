@@ -11,13 +11,19 @@ void test_read_holding() {
     // Ethernet is 14 bytes
     // IP header starts at 14
     mock_packet[14 + 0] = 0x45;       // IP Version 4, Header Length 5 (20 bytes)
-    mock_packet[14 + 12] = 192; 
+    mock_packet[14 + 12] = 192;        // source ip address
     mock_packet[14 + 13] = 168; 
     mock_packet[14 + 14] = 1; 
     mock_packet[14 + 15] = 28; 
+    mock_packet[14 + 16] = 520
     // TCP header starts at 14 + 20 = 34
     // Data offset is at offset 12 in TCP header (34 + 12 = 46)
     mock_packet[46] = 0x50;           // TCP Data Offset 5 (20 bytes)
+    mock_packet[47] = 199;
+    mock_packet[48] = 129;
+    mock_packet[49] = 1; 
+    mock_packet[50] = 25; 
+    mock_packet[51] = 520
 
     mock_packet[54] = 0x00; mock_packet[55] = 0x01; // Transaction ID: 1
     mock_packet[56] = 0x00; mock_packet[57] = 0x00; // Protocol ID: 0

@@ -13,7 +13,7 @@ static packet_callback_t g_callback = debug_packet;
 void debug_packet(const modbus_packet_t *packet){
     struct in_addr src, dst; 
     src.s_addr = packet->src_ip; 
-    dst.s_addr = packet->src_ip; 
+    dst.s_addr = packet->dst_ip; 
 
     printf("Modbus packet captured");
     printf("source: %s:%d\n", inet_ntoa(src), packet->src_port);
