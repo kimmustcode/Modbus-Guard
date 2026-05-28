@@ -2,6 +2,7 @@
 #define MODBUS_H
 
 #include <stdint.h>
+#include <string.h>
 
 /**
  * Structure representing a parsed Modbus TCP packet.
@@ -33,5 +34,10 @@ typedef struct {
  * Function pointer type for the Python callback.
  */
 typedef void (*packet_callback_t)(const modbus_packet_t*);
+
+/**
+ * Pure parsing function to extract Modbus data from a raw packet.
+ */
+void parse_modbus(const u_char *packet, int len, modbus_packet_t *out);
 
 #endif // MODBUS_H

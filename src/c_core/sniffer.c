@@ -1,76 +1,89 @@
 #include <pcap.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <netinet/ip>
-#include <netinet/tcp> 
+#include <netinet/ip.h>
+#include <netinet/tcp.h> 
+#include <arpa/inet.h>
 #include "modbus.h"
 
+// Global callback pointer
+static packet_callback_t g_callback = NULL;
+
 /**
- * TODO: Implement the packet handler callback for libpcap.
- * 
- * Architecture Hint:
- * 2. Verify IP and TCP protocols.
- * 3. Calculate payload offset (Eth + IP + TCP headers).
- * 4. Parse MBAP Header (7 bytes) and PDU.
- * 5. Populate the modbus_packet_t struct.
- * 6. Call the g_callback function pointer.
+ * Pure parsing function to extract Modbus data from a raw packet.
+ * This is decoupled from libpcap for easier testing.
  */
-void handle_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
-    printf("Captured packet with length: %u", header->len);
+void parse_modbus(const u_char *packet, int len, modbus_packet_t *out) {
+    if (len < 14 + 20 + 20 + 7) return; // Basic check: Eth + IP + TCP + MBAP
 
-    // Verify that its modbus and not other type? 
-
-    struct modbus_packet_t *modbus_packet = {0};
-
-
-    // Grab the headers from packet 
     struct ip *ip_header = (struct ip *)(packet + 14);
-    int ip_len = ip_header->ip_hl; 
+    int ip_len = ip_header->ip_hl * 4; 
 
     struct tcphdr *tcp_header = (struct tcphdr *)(packet + 14 + ip_len); 
     int tcp_len = tcp_header->doff * 4; 
 
-    u_char *modbus_data =  (u_char *)(packet + 14 + ip_len + tcp_len); 
+    u_char *modbus_data = (u_char *)(packet + 14 + ip_len + tcp_len); 
+    int payload_len = len - (14 + ip_len + tcp_len);
 
-    // Map the packet to the modbus packet structure 
-    modbus_packet.src_ip = ip_header->ip_src.s_addr; 
-    modbus_packet.dst_ip = ip_header->ip_dst.s_addr; 
-    modbus_packet.src_port = ntohs(tcp_header->source);
-    modbus_packet.dst_port = ntohs(tcp_header->dest);
+    if (payload_len < 7) return; // MBAP header is 7 bytes
 
-    modbus_packet.transaction_id = ntohs(*(uint16_t*)(modbus_data));
-    modbus_packet.product_id = ntohs(*(uint16_t*)(modbus_data + 2));
-    modbus_packet.length = ntohs(*(uint16_t*)(modbus_data + 4));
-    modbus_packet.unit_id = ntohs(*(uint16_t*)(modbus_data + 6));
+    out->src_ip = ip_header->ip_src.s_addr; 
+    out->dst_ip = ip_header->ip_dst.s_addr; 
+    out->src_port = ntohs(tcp_header->source);
+    out->dst_port = ntohs(tcp_header->dest);
 
-    modbus_packet.function_code = *(uint8_t*)(modbus_data + 7);
+    out->transaction_id = ntohs(*(uint16_t*)(modbus_data));
+    out->protocol_id = ntohs(*(uint16_t*)(modbus_data + 2));
+    out->length = ntohs(*(uint16_t*)(modbus_data + 4));
+    out->unit_id = *(uint8_t*)(modbus_data + 6);
+    out->function_code = *(uint8_t*)(modbus_data + 7);
 
+    // Extract register address/count for common function codes
+    if (payload_len >= 12 && (out->function_code <= 6 || out->function_code == 15 || out->function_code == 16)) {
+        out->register_address = ntohs(*(uint16_t*)(modbus_data + 8));
+        out->register_count = ntohs(*(uint16_t*)(modbus_data + 10));
+    }
 
-
+    // Copy raw payload
+    int copy_len = payload_len > 256 ? 256 : payload_len;
+    memcpy(out->payload, modbus_data, copy_len);
+    out->payload_len = copy_len;
 }
 
-/**
- * TODO: Implement the entry point for the C library.
- * 
- * Architecture Hint:
- * 1. Store the callback pointer globally.
- * 3. Use pcap_compile() and pcap_setfilter() for "tcp port 502".
- * 4. Enter pcap_loop().
- */
+void handle_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
+    if (!g_callback) return;
+
+    modbus_packet_t modbus_packet = {0};
+    parse_modbus(packet, header->len, &modbus_packet);
+    
+    g_callback(&modbus_packet);
+}
+
 int start_sniffer(const char *device, packet_callback_t callback) {
-    printf("Initializing sniffer on %s...\n", device);
+    g_callback = callback;
+    char errBuff[PCAP_ERRBUF_SIZE]; 
+    pcap_t *handle = pcap_open_live(device, BUFSIZ, 1, 1000, errBuff); 
 
-    char errBuff = [PCAP_ERRBUF_SIZE]; 
-    pcap_t *handle = pcap_open_live("eth0", BUFSIZ 1, 1000, errBuff); 
-
-    if (handle == NULL){
-        fprintf(stderr, "Unable to open device: %n", errBuff);
+    if (handle == NULL) {
+        fprintf(stderr, "Unable to open device %s: %s\n", device, errBuff);
         return 1;
     }
 
-    pcap_loop(handle, 10, handle_packet, NULL);
+    // Filter for Modbus TCP (port 502)
+    struct bpf_program fp;
+    if (pcap_compile(handle, &fp, "tcp port 502", 0, PCAP_NETMASK_UNKNOWN) == -1) {
+        fprintf(stderr, "Couldn't parse filter: %s\n", pcap_geterr(handle));
+        return 2;
+    }
+    if (pcap_setfilter(handle, &fp) == -1) {
+        fprintf(stderr, "Couldn't install filter: %s\n", pcap_geterr(handle));
+        return 2;
+    }
+
+    printf("Sniffer started on %s. Listening for Modbus traffic...\n", device);
+    pcap_loop(handle, 0, handle_packet, NULL);
+    
+    pcap_freecode(&fp);
     pcap_close(handle); 
-
-
     return 0;
 }
