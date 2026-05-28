@@ -28,7 +28,6 @@ void test_read_holding() {
     mock_packet[48] = 129;
     mock_packet[49] = 1; 
     mock_packet[50] = 25; 
-    mock_packet[51] = 520;
 
     mock_packet[54] = 0x00; mock_packet[55] = 0x01; // Transaction ID: 1
     mock_packet[56] = 0x00; mock_packet[57] = 0x00; // Protocol ID: 0
