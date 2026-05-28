@@ -4,7 +4,7 @@ import os
 # TODO: Define the ModbusPacket struct matching the C header
 class ModbusPacket(ctypes.Structure):
     _fields_ = [
-        ("src_ip", ctypes.c_unit32),
+        ("src_ip", ctypes.c_uint32),
         ("dst_ip", ctypes.c_uint32),
         ("src_port", ctypes.c_uint16),
         ("dst_port", ctypes.c_uint16),
@@ -20,7 +20,6 @@ class ModbusPacket(ctypes.Structure):
 
         ("payload", ctypes.c_uint8 * 256), 
         ("payload_len", ctypes.c_uint16),
-        
     ]
 
 # TODO: Define the CFUNCTYPE for the callback

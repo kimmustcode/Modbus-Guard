@@ -7,7 +7,25 @@
 #include "modbus.h"
 
 // Global callback pointer
-static packet_callback_t g_callback = NULL;
+static packet_callback_t g_callback = debug_packet;
+
+void debug_packet(const modbus_packet_t *packet){
+    struct in_addr src, dst; 
+    src.s_addr = packet->src_ip; 
+    dst.s_addr = packet->src_ip; 
+
+    printf("Modbus packet captured");
+    printf("source: %s:%d\n", inet_ntoa(src), packet->src_port);
+    printf("destination: %s:%d\n", inet_ntoa(dst), packet->dst_port);
+    printf("unit id: %d\n", packet->unit_id);
+    printf("function: %d\n", packet->function_code);
+
+    if(pkt->function_code <= 6){
+        printf("register: %d\n", packet->register_address);
+        printf("register: %d\n", packet->register_count);
+    }
+}
+
 
 /**
  * Pure parsing function to extract Modbus data from a raw packet.
@@ -48,7 +66,10 @@ void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
     int copy_len = payload_len > 256 ? 256 : payload_len;
     memcpy(out->payload, modbus_data, copy_len);
     out->payload_len = copy_len;
+
+    debug_packet(&out);
 }
+
 
 void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
     if (!g_callback) return;
@@ -62,7 +83,7 @@ void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const 
 int start_sniffer(const char *device, packet_callback_t callback) {
     g_callback = callback;
     char errBuff[PCAP_ERRBUF_SIZE]; 
-    pcap_t *handle = pcap_open_live(device, BUFSIZ, 1, 1000, errBuff); 
+    pcap_t *handle = pcap_open_live(devicest, BUFSIZ, 1, 1000, errBuff); 
 
     if (handle == NULL) {
         fprintf(stderr, "Unable to open device %s: %s\n", device, errBuff);
