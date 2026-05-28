@@ -78,7 +78,7 @@ void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const 
     modbus_packet_t modbus_packet = {0};
     parse_modbus(packet, header->len, &modbus_packet);
     
-    g_callback(modbus_packet);
+    g_callback(&modbus_packet);
 }
 
 int start_sniffer(const char *device, packet_callback_t callback) {
