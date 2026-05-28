@@ -19,7 +19,7 @@ void test_read_holding() {
     mock_packet[54] = 0x00; mock_packet[55] = 0x01; // Transaction ID: 1
     mock_packet[56] = 0x00; mock_packet[57] = 0x00; // Protocol ID: 0
     mock_packet[58] = 0x00; mock_packet[59] = 0x06; // Length: 6
-    mock_packet[60] = 0x01;                         // Unit ID: 1
+    mock_packet[60] = 0x02;                         // Unit ID: 1
     
     mock_packet[61] = 0x03;                         // Function Code: 3 (Read Holding)
     mock_packet[62] = 0x00; mock_packet[63] = 0x64; // Register Address: 100
