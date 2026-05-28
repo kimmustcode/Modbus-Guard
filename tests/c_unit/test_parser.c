@@ -15,7 +15,12 @@ void test_read_holding() {
     mock_packet[14 + 13] = 168; 
     mock_packet[14 + 14] = 1; 
     mock_packet[14 + 15] = 28; 
-    mock_packet[14 + 16] = 520;
+    
+    mock_packet[14 + 20] = 0x01;
+    mock_packet[14 + 21] = 0xF6; 
+
+    mock_packet[14 + 22] = 0x01;
+    mock_packet[14 + 23] = 0xF6;  
     // TCP header starts at 14 + 20 = 34
     // Data offset is at offset 12 in TCP header (34 + 12 = 46)
     mock_packet[46] = 0x50;           // TCP Data Offset 5 (20 bytes)
