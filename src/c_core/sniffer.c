@@ -5,6 +5,7 @@
 #include <netinet/tcp.h> 
 #include <arpa/inet.h>
 #include "modbus.h"
+void debug_packet(const modbus_packet_t *packet);
 
 // Global callback pointer
 static packet_callback_t g_callback = debug_packet;
@@ -67,7 +68,7 @@ void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
     memcpy(out->payload, modbus_data, copy_len);
     out->payload_len = copy_len;
 
-    debug_packet(&out);
+    debug_packet(out);
 }
 
 
