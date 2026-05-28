@@ -21,7 +21,7 @@ void debug_packet(const modbus_packet_t *packet){
     printf("unit id: %d\n", packet->unit_id);
     printf("function: %d\n", packet->function_code);
 
-    if(pkt->function_code <= 6){
+    if(packet->function_code <= 6){
         printf("register: %d\n", packet->register_address);
         printf("register: %d\n", packet->register_count);
     }
@@ -78,13 +78,13 @@ void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const 
     modbus_packet_t modbus_packet = {0};
     parse_modbus(packet, header->len, &modbus_packet);
     
-    g_callback(&modbus_packet);
+    g_callback(modbus_packet);
 }
 
 int start_sniffer(const char *device, packet_callback_t callback) {
     g_callback = callback;
     char errBuff[PCAP_ERRBUF_SIZE]; 
-    pcap_t *handle = pcap_open_live(devicest, BUFSIZ, 1, 1000, errBuff); 
+    pcap_t *handle = pcap_open_live(device, BUFSIZ, 1, 1000, errBuff); 
 
     if (handle == NULL) {
         fprintf(stderr, "Unable to open device %s: %s\n", device, errBuff);
