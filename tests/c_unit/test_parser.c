@@ -5,7 +5,7 @@
 void test_read_holding() {
     // The parser expects at least 61 bytes (Eth+IP+TCP+MBAP)
     // We provide 70 bytes to be safe.
-    u_char mock_packet[70] = {0}; 
+    unsigned char mock_packet[70] = {0}; 
     
     // Set minimal headers so the parser doesn't return early
     // Ethernet is 14 bytes

@@ -13,7 +13,7 @@ static packet_callback_t g_callback = NULL;
  * Pure parsing function to extract Modbus data from a raw packet.
  * This is decoupled from libpcap for easier testing.
  */
-void parse_modbus(const u_char *packet, int len, modbus_packet_t *out) {
+void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
     if (len < 14 + 20 + 20 + 7) return; // Basic check: Eth + IP + TCP + MBAP
 
     struct ip *ip_header = (struct ip *)(packet + 14);
@@ -22,7 +22,7 @@ void parse_modbus(const u_char *packet, int len, modbus_packet_t *out) {
     struct tcphdr *tcp_header = (struct tcphdr *)(packet + 14 + ip_len); 
     int tcp_len = tcp_header->doff * 4; 
 
-    u_char *modbus_data = (u_char *)(packet + 14 + ip_len + tcp_len); 
+    unsigned char *modbus_data = (unsigned char *)(packet + 14 + ip_len + tcp_len); 
     int payload_len = len - (14 + ip_len + tcp_len);
 
     if (payload_len < 7) return; // MBAP header is 7 bytes
@@ -50,7 +50,7 @@ void parse_modbus(const u_char *packet, int len, modbus_packet_t *out) {
     out->payload_len = copy_len;
 }
 
-void handle_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
+void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
     if (!g_callback) return;
 
     modbus_packet_t modbus_packet = {0};

@@ -38,6 +38,6 @@ typedef void (*packet_callback_t)(const modbus_packet_t*);
 /**
  * Pure parsing function to extract Modbus data from a raw packet.
  */
-void parse_modbus(const u_char *packet, int len, modbus_packet_t *out);
+void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out);
 
 #endif // MODBUS_H
