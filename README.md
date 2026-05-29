@@ -63,7 +63,7 @@ Requires root privileges to bind the network interface.
 # Listen on a specific interface (e.g., eth0)
 sudo python3 main.py -i eth0
 
-# Listen on all interfaces (Recommended for WSL2)
+# Listen on all interfaces 
 sudo python3 main.py -i any
 ```
 
