@@ -11,19 +11,19 @@ void debug_packet(const modbus_packet_t *packet);
 static packet_callback_t g_callback = debug_packet;
 
 void debug_packet(const modbus_packet_t *packet){
-    struct in_addr src, dst; 
-    src.s_addr = packet->src_ip; 
-    dst.s_addr = packet->dst_ip; 
+    // struct in_addr src, dst; 
+    //src.s_addr = packet->src_ip; 
+    //dst.s_addr = packet->dst_ip; 
 
-    printf("Modbus packet captured");
-    printf("source: %s:%d\n", inet_ntoa(src), packet->src_port);
-    printf("destination: %s:%d\n", inet_ntoa(dst), packet->dst_port);
-    printf("unit id: %d\n", packet->unit_id);
-    printf("function: %d\n", packet->function_code);
+    //printf("Modbus packet captured\n");
+    //printf("source: %s:%d\n", inet_ntoa(src), packet->src_port);
+    //printf("destination: %s:%d\n", inet_ntoa(dst), packet->dst_port);
+    //printf("unit id: %d\n", packet->unit_id);
+    //printf("function: %d\n", packet->function_code);
 
     if(packet->function_code <= 6){
-        printf("register: %d\n", packet->register_address);
-        printf("count: %d\n", packet->register_count);
+        //printf("register: %d\n", packet->register_address);
+        //printf("count: %d\n", packet->register_count);
     }
 }
 
@@ -112,7 +112,7 @@ int start_sniffer(const char *device, packet_callback_t callback) {
         return 2;
     }
 
-    printf("Sniffer started on %s. Listening for Modbus traffic...\n", device);
+    //printf("Sniffer started on %s. Listening for Modbus traffic...\n", device);
     pcap_loop(handle, 0, handle_packet, NULL);
     
     pcap_freecode(&fp);
