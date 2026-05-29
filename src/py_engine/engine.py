@@ -1,4 +1,5 @@
 import yaml
+import socket
 
 class PolicyEngine:
     def __init__(self, rules_path):
