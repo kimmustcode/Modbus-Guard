@@ -15,6 +15,7 @@ class PolicyEngine:
         # 1. Extract FC, Unit ID, Register Address.
         # 2. Iterate through rules.
         # 3. Print alerts for violations.
+        readableIP = socket.inet_ntoa(struct.pack("<I", packet.src_ip))
 
         for rule in self.rules_dict['rules']:
             if packet.function_code in rule.get('function_codes', []):
@@ -24,7 +25,7 @@ class PolicyEngine:
                         continue # Function code matches, but register doesn't
                 
                 if rule['action'] == 'alert':
-                    print(f"ALERT: {rule['description']} ({packet.function_code}, {packet.src_ip})")
+                    print(f"ALERT: {rule['description']} ({packet.function_code}, {readableIP})")
                 return rule['action']
 
         return self.rules_dict.get('global', {}).get('default_action', 'allow')
