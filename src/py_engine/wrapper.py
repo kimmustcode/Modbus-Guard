@@ -22,14 +22,23 @@ class ModbusPacket(ctypes.Structure):
         ("payload_len", ctypes.c_uint16),
     ]
 
-# TODO: Define the CFUNCTYPE for the callback
-PACKET_CALLBACK = None 
+# Define the CFUNCTYPE for the callback
+PACKET_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.POINTER(ModbusPacket))
 
 class SnifferWrapper:
     def __init__(self, lib_path="./build/libsniffer.so"):
-        # TODO: Load the shared library using ctypes.CDLL
-        pass
+        abs_path = os.path.abspath(lib_path)
+
+        self.lib = ctypes.CDLL(abs_path)
+
+        self.lib.start_sniffer.argtypes = [
+            ctypes.c_char_p,
+            PACKET_CALLBACK
+        ]
+
+        self.lib.start_sniffer.restype = ctypes.c_int 
 
     def start(self, interface, callback):
-        # TODO: Call the C function 'start_sniffer'
-        pass
+        self._c_callback = PACKET_CALLBACK(callback)
+        interface_bytes = interface.encode('utf-8')
+        return self.lib.start_sniffer(interface_bytes, self._c_callback)

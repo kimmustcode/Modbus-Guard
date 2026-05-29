@@ -23,7 +23,7 @@ void debug_packet(const modbus_packet_t *packet){
 
     if(packet->function_code <= 6){
         printf("register: %d\n", packet->register_address);
-        printf("register: %d\n", packet->register_count);
+        printf("count: %d\n", packet->register_count);
     }
 }
 

@@ -28,7 +28,7 @@ typedef struct {
     // Raw Payload (for deeper inspection in Python if needed)
     uint8_t  payload[256];
     uint16_t payload_len;
-} modbus_packet_t;
+} __attribute__((packed)) modbus_packet_t;
 
 /**
  * Function pointer type for the Python callback.

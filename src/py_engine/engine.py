@@ -5,7 +5,6 @@ class PolicyEngine:
         # TODO: Load rules from YAML
         with open(rules_path, "r") as rules: 
             self.rules_dict = yaml.safe_load(rules)
-            print(self.rules_dict)
         pass
 
     def evaluate(self, packet):
@@ -18,11 +17,14 @@ class PolicyEngine:
         # 3. Print alerts for violations.
         
         for rule in self.rules_dict['rules']:
-            if packet.function_code in rule['function_codes']:
-                print(rule['id'])
-                print(packet.function_code)
+            if packet.function_code in rule.get('function_codes', []):
+                # If the rule specifies registers, check if the packet's register matches
+                if 'registers' in rule:
+                    if packet.register_address not in rule['registers']:
+                        continue # Function code matches, but register doesn't
+                
+                if rule['action'] == 'alert':
+                    print(f"!!! ALERT: {rule['description']} !!!")
                 return rule['action']
 
-
-
-        pass
+        return self.rules_dict.get('global', {}).get('default_action', 'allow')
