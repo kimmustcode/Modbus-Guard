@@ -17,7 +17,7 @@ class PolicyEngine:
         # 2. Iterate through rules.
         # 3. Print alerts for violations.
         
-        for rule in rules_dict['rules']:
+        for rule in self.rules_dict['rules']:
             if packet.function_code in rule['function_codes']:
                 print(rule['id'])
                 print(packet.function_code)
