@@ -16,8 +16,6 @@ class PolicyEngine:
         # 2. Iterate through rules.
         # 3. Print alerts for violations.
 
-        print(packet.function_code)
-        
         for rule in self.rules_dict['rules']:
             if packet.function_code in rule.get('function_codes', []):
                 # If the rule specifies registers, check if the packet's register matches
