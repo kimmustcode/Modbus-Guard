@@ -11,14 +11,14 @@ def test_critical_register():
     packet.src_ip = 0x0100007F # 127.0.0.1 in little-endian for socket.inet_ntoa(struct.pack("<L", ...))
 
     result = engine.evaluate(packet)
-    # The current engine returns the action string ("allow", "alert", etc.)
+
     assert result == "alert"
 
 def test_allow_read():
     engine = PolicyEngine("config/rules.yaml")
     
     packet = ModbusPacket()
-    packet.function_code = 3 # Read Holding Registers
+    packet.function_code = 3 
     packet.register_address = 10
     packet.src_ip = 0x0100007F
 

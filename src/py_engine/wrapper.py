@@ -1,7 +1,6 @@
 import ctypes
 import os
 
-# TODO: Define the ModbusPacket struct matching the C header
 class ModbusPacket(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
@@ -23,7 +22,6 @@ class ModbusPacket(ctypes.Structure):
         ("payload_len", ctypes.c_uint16),
     ]
 
-# Define the CFUNCTYPE for the callback
 PACKET_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.POINTER(ModbusPacket))
 
 class SnifferWrapper:

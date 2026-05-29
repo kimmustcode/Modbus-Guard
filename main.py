@@ -10,7 +10,6 @@ def main():
     parser.add_argument("-r", "--rules", default="config/rules.yaml", help="Path to YAML rules file")
     args = parser.parse_args()
 
-    # 1. Initialize Engine and Wrapper
     print(f"[*] Loading rules from {args.rules}...")
     try:
         if not os.path.exists(args.rules):
@@ -23,14 +22,10 @@ def main():
 
     sniffer = SnifferWrapper()
 
-    # 2. Define the callback
     def packet_handler(packet_ptr):
-        # packet_ptr is a pointer to the ModbusPacket struct
         packet = packet_ptr.contents
-        # Evaluate against security policy
         engine.evaluate(packet)
 
-    # 3. Start the sniffer
     print(f"[*] Starting sniffer on {args.interface}...")
     print("[*] Press Ctrl+C to stop.")
     

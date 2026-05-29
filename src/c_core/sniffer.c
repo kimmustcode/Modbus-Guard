@@ -27,23 +27,18 @@ void debug_packet(const modbus_packet_t *packet){
     }
 }
 
-
-/**
- * Pure parsing function to extract Modbus data from a raw packet.
- * This is decoupled from libpcap for easier testing.
- */
 void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
-    // 1. Detect Header Size: 
-    // - Linux Cooked (any) is 16 bytes
-    // - Ethernet (eth0) is 14 bytes
-    // - Loopback (lo) is 4 bytes
+    // Detect Header Size: 
+    // -any is 16 bytes
+    // -eth0 is 14 bytes
+    // -lo is 4 bytes
     int ip_offset = 0;
-    if (len > 16 && packet[16] == 0x45) ip_offset = 16;      // Linux Cooked
-    else if (len > 14 && packet[14] == 0x45) ip_offset = 14; // Ethernet
-    else if (len > 4 && packet[4] == 0x45) ip_offset = 4;    // Loopback
-    else return; // Not an IPv4 packet we recognize
+    if (len > 16 && packet[16] == 0x45) ip_offset = 16;     
+    else if (len > 14 && packet[14] == 0x45) ip_offset = 14; 
+    else if (len > 4 && packet[4] == 0x45) ip_offset = 4;    
+    else return; 
 
-    if (len < ip_offset + 20 + 20 + 7) return; // Basic check: Eth + IP + TCP + MBAP
+    if (len < ip_offset + 20 + 20 + 7) return;
 
     struct ip *ip_header = (struct ip *)(packet + ip_offset);
     int ip_len = ip_header->ip_hl * 4; 
@@ -67,13 +62,13 @@ void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
     out->unit_id = *(uint8_t*)(modbus_data + 6);
     out->function_code = *(uint8_t*)(modbus_data + 7);
 
-    // Extract register address/count for common function codes
+    // extract register address/count for common function codes
     if (payload_len >= 12 && (out->function_code <= 6 || out->function_code == 15 || out->function_code == 16)) {
         out->register_address = ntohs(*(uint16_t*)(modbus_data + 8));
         out->register_count = ntohs(*(uint16_t*)(modbus_data + 10));
     }
 
-    // Copy raw payload
+    // copy raw payload
     int copy_len = payload_len > 256 ? 256 : payload_len;
     memcpy(out->payload, modbus_data, copy_len);
     out->payload_len = copy_len;
@@ -101,7 +96,7 @@ int start_sniffer(const char *device, packet_callback_t callback) {
         return 1;
     }
 
-    // Filter for Modbus TCP (port 502)
+    // filter for Modbus TCP (port 502)
     struct bpf_program fp;
     if (pcap_compile(handle, &fp, "tcp port 502", 0, PCAP_NETMASK_UNKNOWN) == -1) {
         fprintf(stderr, "Couldn't parse filter: %s\n", pcap_geterr(handle));
@@ -112,7 +107,7 @@ int start_sniffer(const char *device, packet_callback_t callback) {
         return 2;
     }
 
-    //printf("Sniffer started on %s. Listening for Modbus traffic...\n", device);
+    printf("Sniffer started on %s. Listening for Modbus traffic...\n", device);
     pcap_loop(handle, 0, handle_packet, NULL);
     
     pcap_freecode(&fp);
