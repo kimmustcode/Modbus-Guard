@@ -2,7 +2,7 @@ import socket
 import time
 
 # Based on your 'ip addr' output, your WSL IP is 172.19.125.0
-TARGET_IP = "172.19.125.0" 
+TARGET_IP = "196.168.1.30" 
 PORT = 502
 
 def send_modbus_command(fc, register, value=1):
