@@ -24,7 +24,7 @@ class PolicyEngine:
                         continue # Function code matches, but register doesn't
                 
                 if rule['action'] == 'alert':
-                    print(f"ALERT: {rule['description']}")
+                    print(f"ALERT: {rule['description']} ({packet.function_code}, {packet.src_ip})")
                 return rule['action']
 
         return self.rules_dict.get('global', {}).get('default_action', 'allow')
