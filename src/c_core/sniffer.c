@@ -7,7 +7,6 @@
 #include "modbus.h"
 void debug_packet(const modbus_packet_t *packet);
 
-// Global callback pointer
 static packet_callback_t g_callback = debug_packet;
 
 void debug_packet(const modbus_packet_t *packet){
