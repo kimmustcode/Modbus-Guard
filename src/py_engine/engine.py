@@ -1,5 +1,6 @@
 import yaml
 import socket
+import struct
 
 class PolicyEngine:
     def __init__(self, rules_path):
