@@ -7,7 +7,6 @@
 
 Modbus-Guard is a low-latency, hybrid C/Python Intrusion Detection System (IDS) designed specifically for Operational Technology (OT) and SCADA environments. It performs Deep Packet Inspection (DPI) on Modbus-TCP traffic to identify and alert on unauthorized industrial commands in real-time.
 
-Standard IT firewalls operate at Layer 4 (Ports/IPs) and cannot distinguish between a safe "Read" command and a dangerous "Write" command sent to a Programmable Logic Controller (PLC). Modbus-Guard bridges this gap by enforcing Layer 7 (Application) security policies.
 
 ## 🚀 Key Features
 
