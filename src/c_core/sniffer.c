@@ -33,10 +33,13 @@ void debug_packet(const modbus_packet_t *packet){
  * This is decoupled from libpcap for easier testing.
  */
 void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
-    // 1. Detect Header Size: Loopback (lo) is usually 4 bytes, Ethernet (eth0) is 14.
-    // We check for the IP version 4 marker (0x45) at common offsets.
+    // 1. Detect Header Size: 
+    // - Linux Cooked (any) is 16 bytes
+    // - Ethernet (eth0) is 14 bytes
+    // - Loopback (lo) is 4 bytes
     int ip_offset = 0;
-    if (len > 14 && packet[14] == 0x45) ip_offset = 14;      // Ethernet
+    if (len > 16 && packet[16] == 0x45) ip_offset = 16;      // Linux Cooked
+    else if (len > 14 && packet[14] == 0x45) ip_offset = 14; // Ethernet
     else if (len > 4 && packet[4] == 0x45) ip_offset = 4;    // Loopback
     else return; // Not an IPv4 packet we recognize
 
