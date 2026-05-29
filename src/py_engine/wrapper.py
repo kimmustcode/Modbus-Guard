@@ -3,6 +3,7 @@ import os
 
 # TODO: Define the ModbusPacket struct matching the C header
 class ModbusPacket(ctypes.Structure):
+    _pack_ = 1
     _fields_ = [
         ("src_ip", ctypes.c_uint32),
         ("dst_ip", ctypes.c_uint32),
