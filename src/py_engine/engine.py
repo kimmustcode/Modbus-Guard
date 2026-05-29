@@ -16,5 +16,13 @@ class PolicyEngine:
         # 1. Extract FC, Unit ID, Register Address.
         # 2. Iterate through rules.
         # 3. Print alerts for violations.
+        
+        for rule in rules_dict['rules']:
+            if packet.function_code in rule['function_codes']:
+                print(rule['id'])
+                print(packet.function_code)
+                return rule['action']
+
+
 
         pass
