@@ -33,16 +33,23 @@ void debug_packet(const modbus_packet_t *packet){
  * This is decoupled from libpcap for easier testing.
  */
 void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
-    if (len < 14 + 20 + 20 + 7) return; // Basic check: Eth + IP + TCP + MBAP
+    // 1. Detect Header Size: Loopback (lo) is usually 4 bytes, Ethernet (eth0) is 14.
+    // We check for the IP version 4 marker (0x45) at common offsets.
+    int ip_offset = 0;
+    if (len > 14 && packet[14] == 0x45) ip_offset = 14;      // Ethernet
+    else if (len > 4 && packet[4] == 0x45) ip_offset = 4;    // Loopback
+    else return; // Not an IPv4 packet we recognize
 
-    struct ip *ip_header = (struct ip *)(packet + 14);
+    if (len < ip_offset + 20 + 20 + 7) return; // Basic check: Eth + IP + TCP + MBAP
+
+    struct ip *ip_header = (struct ip *)(packet + ip_offset);
     int ip_len = ip_header->ip_hl * 4; 
 
-    struct tcphdr *tcp_header = (struct tcphdr *)(packet + 14 + ip_len); 
+    struct tcphdr *tcp_header = (struct tcphdr *)(packet + ip_offset + ip_len); 
     int tcp_len = tcp_header->doff * 4; 
 
-    unsigned char *modbus_data = (unsigned char *)(packet + 14 + ip_len + tcp_len); 
-    int payload_len = len - (14 + ip_len + tcp_len);
+    unsigned char *modbus_data = (unsigned char *)(packet + ip_offset + ip_len + tcp_len); 
+    int payload_len = len - (ip_offset + ip_len + tcp_len);
 
     if (payload_len < 7) return; // MBAP header is 7 bytes
 
@@ -73,6 +80,7 @@ void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
 
 
 void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+    printf("[DEBUG] C Sniffer received a packet! Length: %d\n", header->len);
     if (!g_callback) return;
 
     modbus_packet_t modbus_packet = {0};
