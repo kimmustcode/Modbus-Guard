@@ -1,50 +1,63 @@
 import socket
 import time
+import random
 
-# Based on your 'ip addr' output, your WSL IP is 172.19.125.0
-TARGET_IP = "196.168.1.30" 
+# Change this to the IP of your Guard machine (e.g., 127.0.0.1 or your 192.x.x.x IP)
+TARGET_IP = "127.0.0.1" 
 PORT = 502
 
+# Define our pools based on rules.yaml
+ALLOWED_FCS = [1, 2, 3, 4]
+ALERT_FCS = [5, 6, 15, 16]
+CRITICAL_REGISTERS = [100, 101, 102, 103, 104, 105]
+
 def send_modbus_command(fc, register, value=1):
-    """
-    Constructs a Modbus TCP packet and sends it using standard Python sockets.
-    """
-    # MBAP Header: Transaction ID (00 01), Protocol (00 00), Length (00 06), Unit (01)
+    """Constructs and sends a Modbus TCP packet."""
     mbap = b"\x00\x01\x00\x00\x00\x06\x01"
-    
-    # PDU: Function Code, Register Address (2 bytes), Data (2 bytes)
     pdu = bytes([fc]) + register.to_bytes(2, 'big') + value.to_bytes(2, 'big')
-    
     payload = mbap + pdu
 
     try:
-        # Standard TCP socket is best for WSL-to-WSL communication
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(0.5)
-            # Even if the connection is refused, the SYN packet is sent and the sniffer sees it
             s.connect_ex((TARGET_IP, PORT))
             s.sendall(payload)
-            print(f"[*] Sent FC={fc} to Register {register}")
-    except Exception as e:
-        # We ignore errors because we just want the sniffer to see the traffic
+    except Exception:
         pass
 
-def simulate():
-    print(f"--- Starting Continuous Modbus Simulation on {TARGET_IP} ---")
-    print("[*] Press Ctrl+C to stop.")
+def simulate_random_traffic():
+    print(f"--- Starting Randomized Modbus Traffic on {TARGET_IP} ---")
+    print("[*] Generating 1 packet every 2 seconds. Press Ctrl+C to stop.")
     
     while True:
         try:
-            # 1. Safe Read
-            send_modbus_command(3, 10)
-            time.sleep(2)
+            # Randomly decide if we want an 'Allow' or 'Alert' packet
+            scenario = random.choice(["allow", "alert"])
             
-            # 2. Attack Write (Register 100)
-            send_modbus_command(6, 100)
+            if scenario == "allow":
+                fc = random.choice(ALLOWED_FCS)
+                register = random.randint(1, 99) # Non-critical range
+                print(f"[SAFE] Sending Allowed Packet: FC {fc}, Reg {register}")
+            
+            else:
+                # Randomly pick between a bad Function Code or a bad Register
+                sub_scenario = random.choice(["bad_fc", "bad_reg"])
+                
+                if sub_scenario == "bad_fc":
+                    fc = random.choice(ALERT_FCS)
+                    register = random.randint(1, 99)
+                    print(f"[WARN] Sending Alert Packet (Bad FC): FC {fc}, Reg {register}")
+                else:
+                    fc = random.choice([6, 16]) # FCs that trigger critical register rule
+                    register = random.choice(CRITICAL_REGISTERS)
+                    print(f"[CRIT] Sending Alert Packet (Critical Reg): FC {fc}, Reg {register}")
+
+            send_modbus_command(fc, register)
             time.sleep(2)
+
         except KeyboardInterrupt:
-            print("\n[*] Stopping Simulation.")
+            print("\n[*] Stopping Traffic Generator.")
             break
 
 if __name__ == "__main__":
-    simulate()
+    simulate_random_traffic()

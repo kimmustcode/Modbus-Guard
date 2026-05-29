@@ -83,7 +83,6 @@ void parse_modbus(const unsigned char *packet, int len, modbus_packet_t *out) {
 
 
 void handle_packet(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
-    printf("[DEBUG] C Sniffer received a packet! Length: %d\n", header->len);
     if (!g_callback) return;
 
     modbus_packet_t modbus_packet = {0};
